@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { validate } from './env.validation';
+import { EnvironmentVariables, validate } from './env.validation';
 
 @Module({
   imports: [
@@ -11,7 +11,25 @@ import { validate } from './env.validation';
       isGlobal: true,
       validate,
     }),
-    TypeOrmModule.forRoot(),
+    TypeOrmModule.forRootAsync({
+      useFactory: (configService: ConfigService<EnvironmentVariables>) => ({
+        type: 'postgres',
+        host: configService.get('TYPEORM_HOST'),
+        port: configService.get('TYPEORM_PORT'),
+        username: configService.get('TYPEORM_USERNAME'),
+        password: configService.get('TYPEORM_PASSWORD'),
+        database: configService.get('TYPEORM_DATABASE'),
+        logging: configService.get('TYPEORM_LOGGING'),
+        entities: [__dirname + '/**/*.entity{.ts,.js}'],
+        synchronize: false,
+        migrationsRun: true,
+        migrations: [__dirname + 'migration/**/*{.ts,.js}'],
+        cli: {
+          migrationsDir: 'src/migration',
+        },
+      }),
+      inject: [ConfigService],
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],
