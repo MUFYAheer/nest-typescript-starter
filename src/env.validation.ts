@@ -14,21 +14,14 @@ enum Environment {
   Provision = 'provision',
 }
 
-enum Database {
-  Postgres = 'postgres',
-}
-
 export class EnvironmentVariables {
   @IsEnum(Environment)
   NODE_ENV: Environment = Environment.Development;
 
   @IsNumber()
-  PORT: number;
+  PORT = 3000;
 
   // start - TypeORM Configurations
-  @IsEnum(Database)
-  TYPEORM_CONNECTION: Database = Database.Postgres;
-
   @IsString()
   TYPEORM_HOST = 'localhost';
 
@@ -42,32 +35,21 @@ export class EnvironmentVariables {
   TYPEORM_DATABASE = 'postgres';
 
   @IsNumber()
-  TYPEORM_PORT: number;
-
-  @IsBoolean()
-  TYPEORM_SYNCHRONIZE = false;
-
-  @IsBoolean()
-  TYPEORM_MIGRATIONS_RUN = true;
+  TYPEORM_PORT = 5432;
 
   @IsBoolean()
   TYPEORM_LOGGING = false;
-
-  @IsString()
-  TYPEORM_ENTITIES = 'dist/**/*.entity.js';
-
-  @IsString()
-  TYPEORM_MIGRATIONS = 'dist/migration/**/*.js';
-
-  @IsString()
-  TYPEORM_MIGRATIONS_DIR = 'src/migration';
   // end - TypeORM Configurations
 }
 
 export function validate(config: Record<string, unknown>) {
-  const validatedConfig = plainToClass(EnvironmentVariables, config, {
-    enableImplicitConversion: true,
-  });
+  const validatedConfig = plainToClass(
+    EnvironmentVariables,
+    normalizeEnvironmentVariables(config),
+    {
+      enableImplicitConversion: true,
+    },
+  );
   const errors = validateSync(validatedConfig, {
     skipMissingProperties: false,
   });
@@ -76,4 +58,25 @@ export function validate(config: Record<string, unknown>) {
     throw new Error(errors.toString());
   }
   return validatedConfig;
+}
+
+function normalizeEnvironmentVariables(config) {
+  for (const key in config) {
+    if (Object.prototype.hasOwnProperty.call(config, key)) {
+      const element = config[key];
+      if (!isNaN(element)) {
+        config[key] = parseFloat(element);
+      }
+      if (element === '') {
+        config[key] = element;
+      }
+      if (element === 'true') {
+        config[key] = true;
+      }
+      if (element === 'false') {
+        config[key] = false;
+      }
+    }
+  }
+  return config;
 }
