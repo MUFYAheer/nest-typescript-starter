@@ -7,6 +7,7 @@ import * as bcrypt from 'bcrypt';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
+import { UpdateUserRolesDto } from './dto/update-user-roles.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UsersRepository } from './repositories/users.repository';
@@ -16,7 +17,7 @@ export class UsersService {
   constructor(private readonly usersRepository: UsersRepository) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const { fullName, email, password, roles } = createUserDto;
+    const { fullName, email, password } = createUserDto;
     const userExists = await this.findOneByEmail(email);
     if (userExists) {
       throw new ConflictException(`Email ${email} already exists`);
@@ -25,7 +26,6 @@ export class UsersService {
       fullName,
       email,
       password: await this.hashPassword(password),
-      roles,
     });
     return this.usersRepository.save(user);
   }
@@ -69,6 +69,16 @@ export class UsersService {
     const { password } = updateUserPasswordDto;
     const user = await this.findOne(+id);
     user.password = await this.hashPassword(password);
+    return this.usersRepository.save(user);
+  }
+
+  async updateRoles(
+    id: number,
+    updateUserRolesDto: UpdateUserRolesDto,
+  ): Promise<User> {
+    const { roles } = updateUserRolesDto;
+    const user = await this.findOne(+id);
+    user.roles = roles;
     return this.usersRepository.save(user);
   }
 

@@ -17,6 +17,7 @@ import {
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserPasswordDto } from './dto/update-user-password.dto';
+import { UpdateUserRolesDto } from './dto/update-user-roles.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UsersService } from './users.service';
@@ -58,6 +59,15 @@ export class UsersController {
     @Body() updateUserPasswordDto: UpdateUserPasswordDto,
   ) {
     return this.usersService.updatePassword(+id, updateUserPasswordDto);
+  }
+
+  @Patch(':id/roles')
+  @ApiNotFoundResponse({ description: `User with id not found` })
+  updateRoles(
+    @Param('id') id: number,
+    @Body() updateRolesDto: UpdateUserRolesDto,
+  ) {
+    return this.usersService.updateRoles(+id, updateRolesDto);
   }
 
   @Delete(':id')

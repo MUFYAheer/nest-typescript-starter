@@ -1,6 +1,5 @@
-import { IsEmail, IsEnum, IsOptional, IsString, Length } from 'class-validator';
+import { IsEmail, IsString, Length } from 'class-validator';
 import { Match } from '../../common/decorators/match.decorator';
-import { Role } from '../enums/role.enum';
 
 export class CreateUserDto {
   @IsString()
@@ -19,8 +18,4 @@ export class CreateUserDto {
   @Length(8, 45)
   @Match('password')
   confirmPassword: string;
-
-  @IsEnum(Role, { each: true })
-  @IsOptional()
-  roles?: Role[];
 }
