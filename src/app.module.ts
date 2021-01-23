@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { GraphQLModule } from '@nestjs/graphql';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EnvironmentVariables, validate } from './env.validation';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -30,6 +33,12 @@ import { EnvironmentVariables, validate } from './env.validation';
       }),
       inject: [ConfigService],
     }),
+    GraphQLModule.forRoot({
+      debug: true,
+      playground: true,
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+    }),
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
